@@ -41,44 +41,46 @@ def parse_data_line(line,file_type,time_ind,data_ind):
 
     return time_point, data_value
 
-def initialize_time_series(data_line):
+def initialize_time_series(data_line,time_ind,data_ind):
 
     TS = TimeSeries()
     date, value = parse_data_line(data_line,file_type,time_ind,data_ind)
     timepoint = TimePoint(date,value)
-    last_tp = timepoint
+    TS.add_tp(timepoint)
+
+    return TS
 
 
 def parse_file(file_path,file_type,outp_file_path):
 
-    with open(file_path,'r') as csv_file:
+    with open(file_path,'r',newline='') as csv_file:
 
         csv_data = csv.reader(csv_file)
-        header = csv_data.next()
+        header = next(csv_data)
         time_ind, data_ind = parse_header(header)
 
         # Set the first time point object
-        line = csv_data.next()
-        date, value = parse_data_line(line,file_type,time_ind,data_ind)
-        timepoint = TimePoint(date,value)
-        last_tp = timepoint
+        line = next(csv_data)
+        TS = initialize_time_series(line,time_ind, data_ind)
 
-        line = csv_data.next()
+        line = next(csv_data)
         while line:
             try:
                 date, value = parse_data_line(line,file_type,
                                                 time_ind,data_ind)
-                current_tp = TimePoint(date,value, last_tp = last_tp)
-                last_tp.next_tp = current_tp
+                current_tp = TimePoint(date,value)
+                TS.add_tp_to_end(current_tp)
 
-                #print(last_tp.time, last_tp.next_time)
-
-                # Update the last timepoint and the line
-                last_tp = current_tp
-                line = csv_data.next()
+                # Update the line
+                line = next(csv_data)
 
             except StopIteration:
                 break
+
+        print(TS)
+        print(TS._tp_list)
+        for i in TS._tp_list:
+            print(i,TS.timepoints[i])
 
 if __name__ == '__main__':
 

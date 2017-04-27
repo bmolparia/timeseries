@@ -18,6 +18,12 @@ class TimePoint(object):
         if last_tp != None:
             self.last_time = self.time - self.last_tp.time
 
+    def __str__(self):
+        return 'time:{}, next:{}, last:{}'.format(self.time, self.next_time,
+                                            self.last_time)
+    def __repr__(self):
+        return str(self)
+
     @property
     def next_tp(self):
         return self._next_tp
@@ -48,6 +54,7 @@ class TimePoint(object):
         self._last_tp = value
         self.last_time = self.time - self.last_tp.time
 
+
 class TimeSeries(object):
 
     def __init__(self, name=None):
@@ -55,7 +62,25 @@ class TimeSeries(object):
         self.name = name
         self._start_tp = None
         self.timepoints = {}
-        self._tp_list = list(self.timepoints)
+        self._tp_list = sorted(list(self.timepoints))
+        self._duration = None
+
+    def __len__(self):
+        return len(self._tp_list)
+
+    @property
+    def duration(self):
+        return self._duration
+
+    @duration.getter
+    def duration(self):
+        return (self._tp_list[-1] - self._tp_list[0])
+
+    def __str__(self):
+        return '{} timepoints spanning {} '.format(len(self), self.duration)
+
+    def __repr__(self):
+        return str(self)
 
     @property
     def start_tp(self):
@@ -76,14 +101,16 @@ class TimeSeries(object):
 
         if indices == None:
             indices = {x: arr.index(x) for x in arr}
-            
-        if len(arr) == 1:
+
+        if len(arr) == 0:
+            return 0
+        elif len(arr) == 1:
             if value > arr[0]:
                 return indices[arr[0]] + 1
             else:
                 return indices[arr[0]]
         else:
-            arr_mid = len(arr)/2
+            arr_mid = int(len(arr)/2)
             arrLow  = arr[:arr_mid]
             arrHigh = arr[arr_mid:]
 
@@ -94,7 +121,60 @@ class TimeSeries(object):
 
         return out
 
+    def _update_timepoint_list(self,tp):
+        '''' Function to update the timepoint list and return the insert
+        index.'''
+
+        ins_pos = self._insert_positon(self._tp_list, tp.time)
+        self._tp_list = self._tp_list[:ins_pos]+[tp.time]+self._tp_list[ins_pos:]
+
+        return ins_pos
 
     def add_tp(self,tp):
         ''' Function to add a time point object to the timeseries.'''
-        insert_postion
+
+        ins_pos = self._update_timepoint_list(tp)
+        next_tp_index = ins_pos+1
+        try:
+            next_tp = self.timepoints[ self._tp_list[next_tp_index] ]
+            tp.next_tp = next_tp
+            next_tp.last_tp = tp
+        except IndexError:
+            pass
+
+        last_tp_index = ins_pos-1
+        if last_tp_index > 0:
+            previous_tp = self.timepoints[ self._tp_list[last_tp_index] ]
+            tp.last_tp = previous_tp
+            previous_tp.next_tp = tp
+
+        self.timepoints[tp.time] = tp
+
+    def add_tp_to_end(self,tp):
+        ''' Function to add a time point object at the end of the timeseries.'''
+
+        ins_pos = self._update_timepoint_list(tp)
+        last_tp_index = ins_pos-1
+        if self._tp_list[last_tp_index] < tp.time:
+            previous_tp = self.timepoints[ self._tp_list[last_tp_index] ]
+            tp.last_tp = previous_tp
+            self.timepoints[tp.time] = tp
+            previous_tp.next_tp = tp
+
+        else:
+            raise IndexError('Time must be more than the last time stored.')
+
+    def add_tp_to_beginning(self,tp):
+        ''' Function to add a time point object at the beginning of the
+        timeseries.'''
+
+        ins_pos = self._update_timepoint_list(tp)
+        next_tp_index = 1
+        if self._tp_list[next_tp_index] > tp.time:
+            next_tp = self.timepoints[ self._tp_list[next_tp_index] ]
+            tp.next_tp = next_tp
+            self.timepoints[tp.time] = tp
+            next_tp.last_tp = tp
+
+        else:
+            raise IndexError('Time must be more than the last time stored.')
