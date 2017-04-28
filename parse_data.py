@@ -41,7 +41,7 @@ def parse_data_line(line,file_type,time_ind,data_ind):
 
     return time_point, data_value
 
-def initialize_time_series(data_line,time_ind,data_ind):
+def initialize_time_series(data_line,time_ind,data_ind,file_type):
 
     TS = TimeSeries()
     date, value = parse_data_line(data_line,file_type,time_ind,data_ind)
@@ -49,7 +49,6 @@ def initialize_time_series(data_line,time_ind,data_ind):
     TS.add_tp(timepoint)
 
     return TS
-
 
 def parse_file(file_path,file_type,outp_file_path):
 
@@ -61,7 +60,7 @@ def parse_file(file_path,file_type,outp_file_path):
 
         # Set the first time point object
         line = next(csv_data)
-        TS = initialize_time_series(line,time_ind, data_ind)
+        TS = initialize_time_series(line,time_ind, data_ind,file_type)
 
         line = next(csv_data)
         while line:
@@ -70,34 +69,22 @@ def parse_file(file_path,file_type,outp_file_path):
                                                 time_ind,data_ind)
                 current_tp = TimePoint(date,value)
                 TS.add_tp_to_end(current_tp)
-
                 # Update the line
                 line = next(csv_data)
-
             except StopIteration:
                 break
 
-        print(TS)
-        print(TS._tp_list)
-        for i in TS._tp_list:
-            print(i,TS.timepoints[i])
-
 if __name__ == '__main__':
 
-    import sys
+    import argparse
+    parser = argparse.ArgumentParser(description='This script can be used \
+    to read in raw files from Intel and store them as TimeSeries objects.')
 
-    inp_file = sys.argv[1]
-    outp_file = sys.argv[2]
-    file_type = sys.argv[3]
+    parser.add_argument('inp',metavar='Input',help='path to input file')
+    parser.add_argument('out',metavar='Output',help='patht o file where \
+    output should be written')
+    parser.add_argument('file_type',metavar='File Type',help='file type \
+    depending on data contained',choices=['tremor','movement'])
 
-    parse_file(inp_file,file_type,outp_file)
-
-    '''
-    t = TimeSeries()
-    x = [1,4,5,9,12,15,21,27]
-    d = 0
-    q = t._insert_positon(x, d)
-    x = x[0:q]+[d]+x[q:]
-
-    print(q,x)
-    '''
+    args = parser.parse_args()
+    parse_file(args.inp,args.file_type,args.out)
