@@ -21,7 +21,7 @@ class TimePoint(object):
             self.last_time = self.time - self.last_tp.time
 
     def __str__(self):
-        return 'time:{}, next:{}, last:{}'.format(self.time, self.next_time,
+        return '(time:{}, next:{}, last:{})'.format(self.time, self.next_time,
                                             self.last_time)
     def __repr__(self):
         return str(self)
@@ -32,7 +32,8 @@ class TimePoint(object):
 
     @next_tp.setter
     def next_tp(self,value):
-        ''' Defines the set attribute function for the next time point.'''
+        "Defines the set attribute function for the next time point. Raise \
+        TypeError if value isn't a TimePoint object."
         try:
             assert( isinstance(value, TimePoint))
         except AssertionError:
@@ -47,7 +48,8 @@ class TimePoint(object):
 
     @last_tp.setter
     def last_tp(self,value):
-        ''' Defines the set attribute function for the previous time point.'''
+        "Defines the set attribute function for the previous time point.Raise \
+        TypeError if value isn't a TimePoint object."
         try:
             assert( isinstance(value, TimePoint))
         except AssertionError:
@@ -59,8 +61,8 @@ class TimePoint(object):
 
 class TimeSeries(SortedCollection):
 
-    def __init__(self, name=None):
-        super().__init__(key=lambda x: x.time)
+    def __init__(self,iterable=(),name=None):
+        super().__init__(iterable=iterable, key=lambda x: x.time)
         self.name = name
         self._duration = None
 
@@ -94,7 +96,7 @@ class TimeSeries(SortedCollection):
             pass
 
     def add_tp_to_end(self,tp):
-        ''' Function to add a time point object at the end of the timeseries.'''
+        'Add a time point object at the end of the timeseries.'
 
         ins_pos = len(self)
         last_tp_index = ins_pos-1
@@ -112,8 +114,7 @@ class TimeSeries(SortedCollection):
             raise IndexError('Time must be more than the last time stored.')
 
     def add_tp_to_beginning(self,tp):
-        ''' Function to add a time point object at the beginning of the
-        timeseries.'''
+        'Add a time point object at the beginning of the timeseries.'
 
         ins_pos = 0
         next_tp_index = 1
@@ -129,3 +130,29 @@ class TimeSeries(SortedCollection):
 
         else:
             raise IndexError('Time must be less than the first time stored.')
+
+    def get_time_slice(self,start_tp,time_period):
+        'Get a list of  all the timepoints starting at specified time and \
+        ending after a given time period.'
+
+        # Initilize
+        time_slice = [start_tp]
+        current_tp = start_tp
+        duration = current_tp.next_time
+
+        while duration <= time_period:
+
+            next_tp = current_tp.next_tp
+            time_slice.append(next_tp)
+            current_tp = next_tp
+
+            if current_tp.next_tp == None:
+                break
+            duration += current_tp.next_time
+
+        return time_slice
+
+    def to_dict(self):
+        'Get a dictionary of _keys and _items as keys and values of a dict'
+
+        return {x:y for x,y in zip(self._keys,self._items)}

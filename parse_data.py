@@ -3,8 +3,11 @@ This script can be used to parse out the timeseries data from the raw
 files obtained from Intel
 '''
 
+import sys
+
 import csv
-from datetime import datetime
+import pickle
+from datetime import datetime, timedelta
 
 from timeseries import TimePoint, TimeSeries
 
@@ -34,6 +37,7 @@ def parse_data_line(line,file_type,time_ind,data_ind):
         temp = line[data_ind:data_ind+3]
         temp = map(lambda x: x.strip('}').strip('{'), temp)
         data_value = map(lambda x: float(x.split('=')[1]), temp)
+        data_value = list(data_value)
 
     else:
         raise typeerror('wrong file type. only "tremor" or \
@@ -50,7 +54,7 @@ def initialize_time_series(data_line,time_ind,data_ind,file_type):
 
     return TS
 
-def parse_file(file_path,file_type,outp_file_path):
+def parse_file(file_path,file_type):
 
     with open(file_path,'r',newline='') as csv_file:
 
@@ -74,17 +78,4 @@ def parse_file(file_path,file_type,outp_file_path):
             except StopIteration:
                 break
 
-if __name__ == '__main__':
-
-    import argparse
-    parser = argparse.ArgumentParser(description='This script can be used \
-    to read in raw files from Intel and store them as TimeSeries objects.')
-
-    parser.add_argument('inp',metavar='Input',help='path to input file')
-    parser.add_argument('out',metavar='Output',help='patht o file where \
-    output should be written')
-    parser.add_argument('file_type',metavar='File Type',help='file type \
-    depending on data contained',choices=['tremor','movement'])
-
-    args = parser.parse_args()
-    parse_file(args.inp,args.file_type,args.out)
+    return TS
