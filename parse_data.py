@@ -45,16 +45,17 @@ def parse_data_line(line,file_type,time_ind,data_ind):
 
     return time_point, data_value
 
-def initialize_time_series(data_line,time_ind,data_ind,file_type):
+def initialize_time_series(data_line,time_ind,data_ind,file_type,
+                                                    series_name=None):
 
-    TS = TimeSeries()
+    TS = TimeSeries(name=series_name)
     date, value = parse_data_line(data_line,file_type,time_ind,data_ind)
     timepoint = TimePoint(date,value)
     TS.add_tp(timepoint)
 
     return TS
 
-def parse_file(file_path,file_type):
+def parse_file(file_path,file_type,series_name=None):
 
     with open(file_path,'r',newline='') as csv_file:
 
@@ -64,8 +65,8 @@ def parse_file(file_path,file_type):
 
         # Set the first time point object
         line = next(csv_data)
-        TS = initialize_time_series(line,time_ind, data_ind,file_type)
-
+        TS = initialize_time_series(line,time_ind, data_ind,file_type,
+                                                                series_name)
         line = next(csv_data)
         while line:
             try:

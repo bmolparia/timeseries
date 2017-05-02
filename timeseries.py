@@ -21,8 +21,8 @@ class TimePoint(object):
             self.last_time = self.time - self.last_tp.time
 
     def __str__(self):
-        return '(time:{}, next:{}, last:{})'.format(self.time, self.next_time,
-                                            self.last_time)
+        return '(time:{}, value:{})'.format(self.time, self.value)
+
     def __repr__(self):
         return str(self)
 
@@ -64,10 +64,13 @@ class TimeSeries(SortedCollection):
     def __init__(self,iterable=(),name=None):
         super().__init__(iterable=iterable, key=lambda x: x.time)
         self.name = name
+        self.values = self._items
+        self.times = self._keys
         self._duration = None
 
     def __str__(self):
-        return '{} timepoints spanning {} '.format(len(self), self.duration)
+        return '{}: {} timepoints spanning {} '.format(self.name, len(self),
+                                                                self.duration)
 
     def __repr__(self):
         return str(self)
@@ -131,7 +134,7 @@ class TimeSeries(SortedCollection):
         else:
             raise IndexError('Time must be less than the first time stored.')
 
-    def get_time_slice(self,start_tp,time_period):
+    def get_time_slice_forward(self,start_tp,time_period):
         'Get a list of  all the timepoints starting at specified time and \
         ending after a given time period.'
 
@@ -141,7 +144,6 @@ class TimeSeries(SortedCollection):
         duration = current_tp.next_time
 
         while duration <= time_period:
-
             next_tp = current_tp.next_tp
             time_slice.append(next_tp)
             current_tp = next_tp
@@ -149,6 +151,26 @@ class TimeSeries(SortedCollection):
             if current_tp.next_tp == None:
                 break
             duration += current_tp.next_time
+
+        return time_slice
+
+    def get_time_slice_reverse(self,start_tp,time_period):
+        'Get a list of  all the timepoints starting at specified time and \
+        ending after a given time period in the reserse direction.'
+
+        # Initilize
+        time_slice = [start_tp]
+        current_tp = start_tp
+        duration = current_tp.last_time
+
+        while duration <= time_period:
+            last_tp = current_tp.last_tp
+            time_slice.insert(0,last_tp)
+            current_tp = last_tp
+
+            if current_tp.last_tp == None:
+                break
+            duration += current_tp.last_time
 
         return time_slice
 
