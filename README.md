@@ -1,5 +1,15 @@
+## About
+
 Python data structures to store time series data.
 
-To test:
+## Installing required python packages
 
-nosetests
+```pip install -r requirements.txt
+```
+
+## Running tests
+
+```python -m nose
+```
+
+
