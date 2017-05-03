@@ -101,38 +101,45 @@ class TimeSeries(SortedCollection):
     def add_tp_to_end(self,tp):
         'Add a time point object at the end of the timeseries.'
 
-        ins_pos = len(self)
-        last_tp_index = ins_pos-1
-
-        if self._keys[last_tp_index] < tp.time:
-
-            self._keys.insert(ins_pos, tp.time)
-            self._items.insert(ins_pos, tp)
-
-            last_tp = self[last_tp_index]
-            tp.last_tp = last_tp
-            last_tp.next_tp = tp
-
+        if len(self) == 0:
+            self._keys.insert(0,tp.time)
+            self._items.insert(0,tp)
         else:
-            raise IndexError('Time must be more than the last time stored.')
+            ins_pos = len(self)
+            last_tp_index = ins_pos-1
+
+            if self._keys[last_tp_index] < tp.time:
+
+                self._keys.insert(ins_pos, tp.time)
+                self._items.insert(ins_pos, tp)
+
+                last_tp = self[last_tp_index]
+                tp.last_tp = last_tp
+                last_tp.next_tp = tp
+
+            else:
+                raise Exception('Time must be more than the last time stored.')
 
     def add_tp_to_beginning(self,tp):
         'Add a time point object at the beginning of the timeseries.'
 
-        ins_pos = 0
-        next_tp_index = 1
-
-        if self._tp_list[next_tp_index] > tp.time:
-
-            self._keys.insert(ins_pos, tp.time)
-            self._items.insert(ins_pos, tp)
-
-            next_tp = self[next_tp_index]
-            tp.next_tp = next_tp
-            next_tp.last_tp = tp
-
+        if len(self) == 0:
+            self._keys.insert(0,tp.time)
+            self._items.insert(0,tp)
         else:
-            raise IndexError('Time must be less than the first time stored.')
+            ins_pos = 0
+            next_tp_index = 0
+
+            if self._keys[next_tp_index] > tp.time:
+
+                self._keys.insert(ins_pos, tp.time)
+                self._items.insert(ins_pos, tp)
+
+                next_tp = self[next_tp_index]
+                tp.next_tp = next_tp
+                next_tp.last_tp = tp
+            else:
+                raise Exception('Time must be less than the first time stored.')
 
     def get_time_slice_forward(self,start_tp,time_period):
         'Get a list of  all the timepoints starting at specified time and \
