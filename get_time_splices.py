@@ -68,7 +68,7 @@ def get_gameplays_with_time_stamp(tseries,time_stamps):
             if (time_stamp - time_point.time) < timedelta(minutes=5):
                 gameplay = tseries.get_time_slice_reverse(start_tp=time_point,
                                                         time_period=duration)
-                print(time_stamp, time_point)
+                #print(time_stamp, time_point)
                 yield gameplay
 
         except ValueError as e:
@@ -85,10 +85,6 @@ def get_magnitudes(array):
 
     return magnitudes
 
-def get_time_stamps(tsfile):
-
-
-    return time_stamps
 
 if __name__ == '__main__':
 
@@ -107,20 +103,19 @@ if __name__ == '__main__':
 
     if args.tsfile != None:
 
-        #time_stamps = get_time_stamps(args.tsfile)
         with open(args.tsfile,'rb') as inp:
             time_stamps = pickle.load(inp)
 
         ind = 1
         for gameplay in get_gameplays_with_time_stamp(movements,time_stamps):
             pass
-            #fname = args.outfile+'_'+str(ind)+'.pickle'
-            #magnitudes = get_magnitudes(gameplay)
-            #ind += 1
+            fname = args.outfile+'_'+str(ind)+'.pickle'
+            magnitudes = get_magnitudes(gameplay)
+            ind += 1
 
-            #print(fname)
-            #with open(fname,'wb') as out:
-            #    pickle.dump(magnitudes,out)
+            print(fname)
+            with open(fname,'wb') as out:
+                pickle.dump(magnitudes,out)
 
     else:
         ind = 1
